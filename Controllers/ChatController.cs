@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Data;
 using Microsoft.Data.SqlClient;
 using Dapper;
-using System.Data.OleDb;
 
 namespace CoreChatApi.Controllers
 {
@@ -25,7 +23,7 @@ namespace CoreChatApi.Controllers
         {
             _config = config;
             _logger = logger;
-            connectionString = _config.GetConnectionString("oleDb");
+            connectionString = _config.GetConnectionString("db");
 
             CreateTableIfRequired();
         }
@@ -109,7 +107,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (OleDbConnection con = new OleDbConnection(connectionString))
+                using (var con = new SqlConnection(connectionString))
                 {
                     await con.ExecuteAsync(sql);
                 }
@@ -125,7 +123,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (OleDbConnection con = new OleDbConnection(connectionString))
+                using (var con = new SqlConnection(connectionString))
                 {
                     return await con.QueryAsync<T>(sql);
                 }
@@ -163,7 +161,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (var con = new OleDbConnection(connectionString))
+                using (var con = new SqlConnection(connectionString))
                 {
                     await con.OpenAsync();
                     return true;
