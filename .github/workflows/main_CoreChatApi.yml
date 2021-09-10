@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.Net Core app to Azure Web App - CoreChatApi
 
 on:
@@ -15,11 +12,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - uses: microsoft/variable-substitution@v1
       with:
         files: 'appsettings.json'
       env:
-        ConnectionStrings.db: ${{ secrets.db }}
+        ConnectionStrings.server: tcp:corechatserver.database.windows.net,1433
+        ConnectionStrings.database: CoreChat
+        ConnectionStrings.username: adavid
+        ConnectionStrings.password: ${{ secrets.database_password }}
 
     - name: Set up .NET Core
       uses: actions/setup-dotnet@v1

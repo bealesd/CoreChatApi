@@ -16,14 +16,13 @@ namespace CoreChatApi.Controllers
     {
         private readonly IConfiguration _config;
         private readonly ILogger<ChatController> _logger;
-
-        private readonly string connectionString;
+        private readonly string dbConnectionString;
 
         public ChatController(IConfiguration config, ILogger<ChatController> logger)
         {
-            _config = config;
+            _config = config.AddDatabaseConnectionString();
             _logger = logger;
-            connectionString = _config.GetConnectionString("db");
+            dbConnectionString = _config.GetConnectionString("db");
 
             CreateTableIfRequired();
         }
@@ -107,7 +106,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (var con = new SqlConnection(connectionString))
+                using (var con = new SqlConnection(dbConnectionString))
                 {
                     await con.ExecuteAsync(sql);
                 }
@@ -123,7 +122,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (var con = new SqlConnection(connectionString))
+                using (var con = new SqlConnection(dbConnectionString))
                 {
                     return await con.QueryAsync<T>(sql);
                 }
@@ -161,7 +160,7 @@ namespace CoreChatApi.Controllers
         {
             try
             {
-                using (var con = new SqlConnection(connectionString))
+                using (var con = new SqlConnection(dbConnectionString))
                 {
                     await con.OpenAsync();
                     return true;
@@ -180,5 +179,22 @@ namespace CoreChatApi.Controllers
         public string Name { get; set; }
         public string Message { get; set; }
         public DateTime? DateTime { get; set; }
+    }
+
+    public static class AppSettingHelper
+    {
+        public static IConfiguration AddDatabaseConnectionString(this IConfiguration config)
+        {
+            config["ConnectionStrings:db"] = @$"
+                Server={config.GetConnectionString("server")};
+                Initial Catalog={config.GetConnectionString("database")};
+                Persist Security Info=False;
+                User ID={config.GetConnectionString("username")};
+                Password={config.GetConnectionString("password")};
+                MultipleActiveResultSets=False;
+                Encrypt=True;TrustServerCertificate=True;
+                Connection Timeout=60;";
+            return config;
+        }
     }
 }
