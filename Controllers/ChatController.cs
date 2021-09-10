@@ -36,6 +36,7 @@ namespace CoreChatApi.Controllers
             if (isConnectionInvalid)
             {
                 Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
+                return Content(dbConnectionString);
                 return Content("Failed to connect to database");
             }
 
