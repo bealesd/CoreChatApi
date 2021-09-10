@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -87,7 +88,21 @@ namespace CoreChatApi.Controllers
             if (isSqlInvalid)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
-            return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, "Added new message");
+            var lastChat = await GetLastChat();
+             if (lastChat == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(lastChat);
+        }
+
+        private async Task<ChatDTO> GetLastChat()
+        {
+            var getLastRowSql = @"
+                    SELECT TOP(1) *   
+                    FROM [dbo].[chat]   
+                    ORDER BY datetime DESC";
+            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getLastRowSql);
+            return chats.FirstOrDefault();
         }
 
         private async void CreateChatTable()
