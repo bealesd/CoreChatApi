@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -43,9 +44,17 @@ namespace CoreChatApi.Controllers
                     FROM [dbo].[chat]   
                     ORDER BY datetime DESC";
 
-            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getLastTenRowSql);
+            var chats = (await _databaseRepo.QuerySQL<ChatDTO>(getLastTenRowSql)).ToList();
             if (chats == null)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            foreach (var chat in chats)
+            {
+                var dt = (DateTime)chat.DateTime;
+                chat.JavaScriptDateTime = dt
+                .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
+                .TotalMilliseconds;
+            }
 
             return Ok(chats);
         }
