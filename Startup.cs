@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
+using CoreChatApi.Helpers;
+
 namespace CoreChatApi
 {
     public class Startup
@@ -19,6 +21,7 @@ namespace CoreChatApi
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            configuration.AddDatabaseConnectionString();
         }
 
         public IConfiguration Configuration { get; }
@@ -26,7 +29,6 @@ namespace CoreChatApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

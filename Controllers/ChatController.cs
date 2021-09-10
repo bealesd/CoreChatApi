@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Data.SqlClient;
-using Dapper;
+
+using CoreChatApi.Dtos;
+using CoreChatApi.Repos;
+using CoreChatApi.Logger;
 
 namespace CoreChatApi.Controllers
 {
@@ -14,22 +14,23 @@ namespace CoreChatApi.Controllers
     [Route("[controller]/[action]")]
     public class ChatController : ControllerBase
     {
-        private const string FAILED_TO_CONNECT_TO_DATABASE = "Failed to connect to database.";
-        private const string FAILED_TO_EXECUTE_SQL = "Failed to execute sql.";
-        private const string FAILED_TO_RUN_SQL_QUERY = "Failed to run sql query.";
-        private readonly IConfiguration _config;
         private readonly ILogger<ChatController> _logger;
-        private readonly string dbConnectionString;
+        private readonly string _dbConnectionString;
+        private DatabaseRepo _databaseRepo { get; set; }
+        public SqlLogger _myLogger { get; set; }
 
         public ChatController(IConfiguration config, ILogger<ChatController> logger)
         {
-            _config = config.AddDatabaseConnectionString();
+            _dbConnectionString = config.GetConnectionString("db");
+
             _logger = logger;
-            dbConnectionString = _config.GetConnectionString("db");
+            _logger.LogInformation($"Connection string:\n\t{_dbConnectionString}");
 
-            _logger.LogInformation($"Connection string:\n\t{dbConnectionString}");
+            _myLogger = new SqlLogger(_dbConnectionString);
 
-            CreateTableIfRequired();
+            _databaseRepo = new DatabaseRepo(_dbConnectionString, _myLogger);
+
+            CreateChatTable();
         }
 
         [HttpGet]
@@ -37,16 +38,15 @@ namespace CoreChatApi.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> GetChats()
         {
-            var isConnectionInvalid = !await TestConnection();
-            if (isConnectionInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
-
             var getLastTenRowSql = @"
                     SELECT TOP(100) *   
                     FROM [dbo].[chat]   
                     ORDER BY datetime DESC";
 
-            var chats = await QuerySQL<ChatDTO>(getLastTenRowSql);
+            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getLastTenRowSql);
+            if (chats == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
             return Ok(chats);
         }
 
@@ -55,16 +55,15 @@ namespace CoreChatApi.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> GetChatsAfterId(int id)
         {
-            var isConnectionInvalid = !await TestConnection();
-            if (isConnectionInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
-
             var getChatsAfterIdSql = $@"
                     SELECT *   
                     FROM [dbo].[chat]   
                     WHERE id > {id}";
 
-            var chats = await QuerySQL<ChatDTO>(getChatsAfterIdSql);
+            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getChatsAfterIdSql);
+            if (chats == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
             return Ok(chats);
         }
 
@@ -72,10 +71,6 @@ namespace CoreChatApi.Controllers
         [ActionName("AddChat")]
         public async Task<IActionResult> AddChat(ChatDTO chat)
         {
-            var isConnectionInvalid = !await TestConnection();
-            if (isConnectionInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
-
             var chatSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[chat](
                             [name],
@@ -87,55 +82,15 @@ namespace CoreChatApi.Controllers
                             '{chat.Message}',
                             GETDATE()
                             )";
-            var isSqlInvalid = !await ExecuteSQL(chatSql);
+            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(chatSql);
             if (isSqlInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, FAILED_TO_EXECUTE_SQL);
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
-            Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status200OK;
-            return Content("Added new message");
+            return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, "Added new message");
         }
 
-        private async Task<bool> ExecuteSQL(string sql)
+        private async void CreateChatTable()
         {
-            try
-            {
-                using (var con = new SqlConnection(dbConnectionString))
-                {
-                    await con.ExecuteAsync(sql);
-                }
-                return true;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"{FAILED_TO_EXECUTE_SQL}. Sql:\n\t{sql}");
-                return false;
-            }
-        }
-
-        private async Task<IEnumerable<T>> QuerySQL<T>(string sql)
-        {
-            try
-            {
-                using (var con = new SqlConnection(dbConnectionString))
-                {
-                    return await con.QueryAsync<T>(sql);
-                }
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"{FAILED_TO_RUN_SQL_QUERY}. Sql query:\n\t{sql}");
-                return new List<T>();
-            }
-        }
-
-        private async void CreateTableIfRequired()
-        {
-            var isConnectionInvalid = !await TestConnection();
-            if (isConnectionInvalid)
-            {
-                return;
-            }
-
             var createChatTableSql = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='chat' AND xtype='U')
                 CREATE TABLE chat (
@@ -144,53 +99,7 @@ namespace CoreChatApi.Controllers
                     message TEXT NOT NULL,
                     datetime DATETIME NOT NULL
                 )";
-            var isSqlInvalid = !await ExecuteSQL(createChatTableSql);
-            if (isSqlInvalid)
-            {
-                return;
-            }
-        }
-
-        private async Task<bool> TestConnection()
-        {
-            try
-            {
-                using (var con = new SqlConnection(dbConnectionString))
-                {
-                    await con.OpenAsync();
-                    return true;
-                }
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"{FAILED_TO_CONNECT_TO_DATABASE}. Connection string:\n\t{dbConnectionString}");
-                return false;
-            }
-        }
-    }
-
-    public class ChatDTO
-    {
-        public int? Id { get; set; }
-        public string Name { get; set; }
-        public string Message { get; set; }
-        public DateTime? DateTime { get; set; }
-    }
-
-    public static class AppSettingHelper
-    {
-        public static IConfiguration AddDatabaseConnectionString(this IConfiguration config)
-        {
-            config["ConnectionStrings:db"] = @$"
-                Server={config.GetConnectionString("server")};
-                Initial Catalog={config.GetConnectionString("database")};
-                Persist Security Info=False;
-                User ID={config.GetConnectionString("username")};
-                Password={config.GetConnectionString("password")};
-                MultipleActiveResultSets=False;
-                Encrypt=True;TrustServerCertificate=True;
-                Connection Timeout=60;";
-            return config;
+            await _databaseRepo.ExecuteSQL(createChatTableSql);
         }
     }
 }
