@@ -48,14 +48,6 @@ namespace CoreChatApi.Controllers
             if (chats == null)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
-            foreach (var chat in chats)
-            {
-                var dt = (DateTime)chat.DateTime;
-                chat.JavaScriptDateTime = dt
-                .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
-                .TotalMilliseconds;
-            }
-
             return Ok(chats);
         }
 
