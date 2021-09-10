@@ -19,7 +19,7 @@ jobs:
       env:
         ConnectionStrings.server: tcp:corechatserver.database.windows.net,1433
         ConnectionStrings.database: CoreChat
-        ConnectionStrings.username: adavid
+        ConnectionStrings.username: adavidb
         ConnectionStrings.password: ${{ secrets.database_password }}
 
     - name: Set up .NET Core

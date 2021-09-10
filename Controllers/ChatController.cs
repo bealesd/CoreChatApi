@@ -14,6 +14,8 @@ namespace CoreChatApi.Controllers
     [Route("[controller]/[action]")]
     public class ChatController : ControllerBase
     {
+        private const string FAILED_TO_CONNECT_TO_DATABASE = "Failed to connect to database.";
+        private const string FAILED_TO_EXECUTE_SQL = "Failed to execute sql.";
         private readonly IConfiguration _config;
         private readonly ILogger<ChatController> _logger;
         private readonly string dbConnectionString;
@@ -34,11 +36,7 @@ namespace CoreChatApi.Controllers
         {
             var isConnectionInvalid = !await TestConnection();
             if (isConnectionInvalid)
-            {
-                Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
-                return Content(dbConnectionString);
-                return Content("Failed to connect to database");
-            }
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
 
             var getLastTenRowSql = @"
                     SELECT TOP(100) *   
@@ -56,10 +54,7 @@ namespace CoreChatApi.Controllers
         {
             var isConnectionInvalid = !await TestConnection();
             if (isConnectionInvalid)
-            {
-                Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
-                return Content("Failed to connect to database");
-            }
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
 
             var getChatsAfterIdSql = $@"
                     SELECT *   
@@ -76,10 +71,7 @@ namespace CoreChatApi.Controllers
         {
             var isConnectionInvalid = !await TestConnection();
             if (isConnectionInvalid)
-            {
-                Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
-                return Content("Failed to connect to database");
-            }
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError, FAILED_TO_CONNECT_TO_DATABASE);
 
             var chatSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[chat](
@@ -94,10 +86,7 @@ namespace CoreChatApi.Controllers
                             )";
             var isSqlInvalid = !await ExecuteSQL(chatSql);
             if (isSqlInvalid)
-            {
-                Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest;
-                return Content("Failed to execute sql");
-            }
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, FAILED_TO_EXECUTE_SQL);
 
             Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status200OK;
             return Content("Added new message");
@@ -167,8 +156,9 @@ namespace CoreChatApi.Controllers
                     return true;
                 }
             }
-            catch
+            catch (Exception exception)
             {
+                _logger.LogError(exception, $"{FAILED_TO_CONNECT_TO_DATABASE}. Connection string:\n\t{dbConnectionString}");
                 return false;
             }
         }
