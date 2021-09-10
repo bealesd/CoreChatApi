@@ -16,6 +16,7 @@ namespace CoreChatApi.Controllers
     {
         private const string FAILED_TO_CONNECT_TO_DATABASE = "Failed to connect to database.";
         private const string FAILED_TO_EXECUTE_SQL = "Failed to execute sql.";
+        private const string FAILED_TO_RUN_SQL_QUERY = "Failed to run sql query.";
         private readonly IConfiguration _config;
         private readonly ILogger<ChatController> _logger;
         private readonly string dbConnectionString;
@@ -25,6 +26,8 @@ namespace CoreChatApi.Controllers
             _config = config.AddDatabaseConnectionString();
             _logger = logger;
             dbConnectionString = _config.GetConnectionString("db");
+
+            _logger.LogInformation($"Connection string:\n\t{dbConnectionString}");
 
             CreateTableIfRequired();
         }
@@ -102,8 +105,9 @@ namespace CoreChatApi.Controllers
                 }
                 return true;
             }
-            catch
+            catch (Exception exception)
             {
+                _logger.LogError(exception, $"{FAILED_TO_EXECUTE_SQL}. Sql:\n\t{sql}");
                 return false;
             }
         }
@@ -117,8 +121,9 @@ namespace CoreChatApi.Controllers
                     return await con.QueryAsync<T>(sql);
                 }
             }
-            catch
+            catch (Exception exception)
             {
+                _logger.LogError(exception, $"{FAILED_TO_RUN_SQL_QUERY}. Sql query:\n\t{sql}");
                 return new List<T>();
             }
         }
