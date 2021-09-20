@@ -16,7 +16,7 @@ namespace CoreChatApi.Controllers
     [Route("[controller]/[action]")]
     public class LogController : ControllerBase
     {
-        private readonly ILogger<ChatController> _logger;
+        private readonly ILogger<LogController> _logger;
         private readonly string _dbConnectionString;
         private DatabaseRepo _databaseRepo { get; set; }
         public SqlLogger _myLogger { get; set; }
