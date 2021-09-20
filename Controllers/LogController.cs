@@ -71,11 +71,21 @@ namespace CoreChatApi.Controllers
             if (isSqlInvalid)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
-            var lastChat = await GetLastChat();
-             if (lastChat == null)
+            var lastLog = await GetLastLog();
+             if (lastLog == null)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
-            return Ok(lastChat);
+            return Ok(lastLog);
+        }
+
+          private async Task<LogDTO> GetLastLog()
+        {
+            var getLastRowSql = @"
+                    SELECT TOP(1) *   
+                    FROM [dbo].[logger]   
+                    ORDER BY datetime DESC";
+            var logs = await _databaseRepo.QuerySQL<LogDTO>(getLastRowSql);
+            return logs.FirstOrDefault();
         }
 
         private async void CreateLogTable()
