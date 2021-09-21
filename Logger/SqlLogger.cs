@@ -9,6 +9,7 @@ namespace CoreChatApi.Logger
 {
     public class SqlLogger
     {
+        private readonly string table = "logger";
         public DatabaseRepo _databaseRepo { get; set; }
 
         public SqlLogger(string dbConnectionString)
@@ -20,7 +21,7 @@ namespace CoreChatApi.Logger
         internal async Task<bool> LogMessage(string message, string level)
         {
             var logSql = @$"USE [CoreChat]
-                INSERT INTO [dbo].[logger](
+                INSERT INTO [dbo].[{table}](
                             [level],
                             [message],
                             [datetime]
@@ -38,7 +39,7 @@ namespace CoreChatApi.Logger
         {
             var getLastRowSql = @"
                     SELECT TOP(1) *   
-                    FROM [dbo].[logger]   
+                    FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
             var logs = await _databaseRepo.QuerySQL<LogDTO>(getLastRowSql);
             return logs.FirstOrDefault();
@@ -48,7 +49,7 @@ namespace CoreChatApi.Logger
         {
             var getLastTenRowSql = @"
                     SELECT TOP(100) *   
-                    FROM [dbo].[logger]   
+                    FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
 
             return await _databaseRepo.QuerySQL<LogDTO>(getLastTenRowSql);  
@@ -57,8 +58,8 @@ namespace CoreChatApi.Logger
         internal async void CreateLoggerTable()
         {
             var createLogTableSql = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='logger' AND xtype='U')
-                CREATE TABLE logger (
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
+                CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,
                     level TEXT NOT NULL,
                     message TEXT NOT NULL,

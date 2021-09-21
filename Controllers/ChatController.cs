@@ -15,6 +15,7 @@ namespace CoreChatApi.Controllers
     [Route("[controller]/[action]")]
     public class ChatController : ControllerBase
     {
+        private readonly string table = "chat";
         private readonly ILogger<ChatController> _logger;
         private readonly string _dbConnectionString;
         private DatabaseRepo _databaseRepo { get; set; }
@@ -41,7 +42,7 @@ namespace CoreChatApi.Controllers
         {
             var getLastTenRowSql = @"
                     SELECT TOP(100) *   
-                    FROM [dbo].[chat]   
+                    FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
 
             var chats = (await _databaseRepo.QuerySQL<ChatDTO>(getLastTenRowSql)).ToList();
@@ -58,7 +59,7 @@ namespace CoreChatApi.Controllers
         {
             var getChatsAfterIdSql = $@"
                     SELECT *   
-                    FROM [dbo].[chat]   
+                    FROM [dbo].[{table}]   
                     WHERE id > {id}";
 
             var chats = await _databaseRepo.QuerySQL<ChatDTO>(getChatsAfterIdSql);
@@ -73,7 +74,7 @@ namespace CoreChatApi.Controllers
         public async Task<IActionResult> AddChat(ChatDTO chat)
         {
             var chatSql = @$"USE [CoreChat]
-                INSERT INTO [dbo].[chat](
+                INSERT INTO [dbo].[{table}](
                             [name],
                             [message],
                             [datetime]
@@ -98,7 +99,7 @@ namespace CoreChatApi.Controllers
         {
             var getLastRowSql = @"
                     SELECT TOP(1) *   
-                    FROM [dbo].[chat]   
+                    FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
             var chats = await _databaseRepo.QuerySQL<ChatDTO>(getLastRowSql);
             return chats.FirstOrDefault();
@@ -107,8 +108,8 @@ namespace CoreChatApi.Controllers
         private async void CreateChatTable()
         {
             var createChatTableSql = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='chat' AND xtype='U')
-                CREATE TABLE chat (
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
+                CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,
                     name TEXT NOT NULL,
                     message TEXT NOT NULL,
