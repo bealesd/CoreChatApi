@@ -1,11 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using Dapper;
 
-using CoreChatApi.Controllers;
 using CoreChatApi.Logger;
 
 namespace CoreChatApi.Repos
@@ -47,7 +45,7 @@ namespace CoreChatApi.Repos
             catch (Exception exception)
             {
                 if (_logger != null)
-                    _logger.LogError(exception, $"{Globals.FAILED_TO_RUN_SQL_QUERY}. Sql query: {sql}");
+                    await _logger.LogMessage($"{exception.Message}.\n{Globals.FAILED_TO_RUN_SQL_QUERY}. Sql query: {sql}", "error");
 
                 return null;
             }
@@ -68,7 +66,7 @@ namespace CoreChatApi.Repos
             catch (Exception exception)
             {
                 if (_logger != null)
-                    _logger.LogError(exception, $"{Globals.FAILED_TO_EXECUTE_SQL}. Sql: {sql}");
+                    await _logger.LogMessage($"{exception.Message}.\n{Globals.FAILED_TO_EXECUTE_SQL}. Sql: {sql}", "error");
 
                 return false;
             }
@@ -87,7 +85,7 @@ namespace CoreChatApi.Repos
             catch (Exception exception)
             {
                 if (_logger != null)
-                    _logger.LogError(exception, $"{Globals.FAILED_TO_CONNECT_TO_DATABASE}. Connection string: {connectionString}");
+                    await _logger.LogMessage($"{exception.Message}.\n{Globals.FAILED_TO_CONNECT_TO_DATABASE}. Connection string: {connectionString}", "error");
                 return false;
             }
         }

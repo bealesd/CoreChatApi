@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-
 using CoreChatApi.Dtos;
 using CoreChatApi.Repos;
 using CoreChatApi.Logger;
