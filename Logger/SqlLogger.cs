@@ -37,7 +37,7 @@ namespace CoreChatApi.Logger
 
         internal async Task<LogDTO> GetLastLog()
         {
-            var getLastRowSql = @"
+            var getLastRowSql = @$"
                     SELECT TOP(1) *   
                     FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
@@ -47,7 +47,7 @@ namespace CoreChatApi.Logger
 
         internal async Task<IEnumerable<LogDTO>> GetLogs()
         {
-            var getLastTenRowSql = @"
+            var getLastTenRowSql = @$"
                     SELECT TOP(100) *   
                     FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
@@ -57,7 +57,7 @@ namespace CoreChatApi.Logger
 
         internal async void CreateLoggerTable()
         {
-            var createLogTableSql = @"
+            var createLogTableSql = @$"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
                 CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,

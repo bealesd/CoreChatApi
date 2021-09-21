@@ -40,7 +40,7 @@ namespace CoreChatApi.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> GetChats()
         {
-            var getLastTenRowSql = @"
+            var getLastTenRowSql = @$"
                     SELECT TOP(100) *   
                     FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
@@ -57,7 +57,7 @@ namespace CoreChatApi.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> GetChatsAfterId(int id)
         {
-            var getChatsAfterIdSql = $@"
+            var getChatsAfterIdSql = @$"
                     SELECT *   
                     FROM [dbo].[{table}]   
                     WHERE id > {id}";
@@ -97,7 +97,7 @@ namespace CoreChatApi.Controllers
 
         private async Task<ChatDTO> GetLastChat()
         {
-            var getLastRowSql = @"
+            var getLastRowSql = @$"
                     SELECT TOP(1) *   
                     FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
@@ -107,7 +107,7 @@ namespace CoreChatApi.Controllers
 
         private async void CreateChatTable()
         {
-            var createChatTableSql = @"
+            var createChatTableSql = @$"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
                 CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,
