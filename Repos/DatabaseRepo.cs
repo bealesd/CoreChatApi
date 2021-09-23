@@ -50,7 +50,8 @@ namespace CoreChatApi.Repos
                 return null;
             }
         }
-        public async Task<bool> ExecuteSQL(string sql)
+
+        public async Task<bool> ExecuteSQL(string sql, DynamicParameters values = null)
         {
             var isConnectionInvalid = !await TestConnection(_dbConnectionString);
             if (isConnectionInvalid) return false;
@@ -59,7 +60,14 @@ namespace CoreChatApi.Repos
             {
                 using (var con = new SqlConnection(_dbConnectionString))
                 {
-                    await con.ExecuteAsync(sql);
+                    if (values is null)
+                    {
+                        var result = await con.ExecuteAsync(sql);
+                    }
+                    else
+                    {
+                        var result = await con.ExecuteAsync(sql, values);
+                    }
                 }
                 return true;
             }

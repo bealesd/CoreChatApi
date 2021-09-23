@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Dapper;
 using CoreChatApi.Repos;
 using CoreChatApi.Dtos;
 
@@ -20,19 +21,16 @@ namespace CoreChatApi.Logger
 
         internal async Task<bool> LogMessage(string message, string level)
         {
-            var logSql = @$"USE [CoreChat]
+            string logSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[{table}](
                             [level],
                             [message],
                             [datetime]
                             )
-                        VALUES(
-                            '{level}',
-                            '{message}',
-                            GETDATE()
-                            )";
+            VALUES(@level, @message,GETDATE())";
+            var parameters = new DynamicParameters(new { level = level, message = message });
 
-            return await _databaseRepo.ExecuteSQL(logSql);
+            return await _databaseRepo.ExecuteSQL(logSql, parameters);
         }
 
         internal async Task<LogDTO> GetLastLog()
@@ -52,7 +50,7 @@ namespace CoreChatApi.Logger
                     FROM [dbo].[{table}]   
                     ORDER BY datetime DESC";
 
-            return await _databaseRepo.QuerySQL<LogDTO>(getLastTenRowSql);  
+            return await _databaseRepo.QuerySQL<LogDTO>(getLastTenRowSql);
         }
 
         internal async void CreateLoggerTable()
