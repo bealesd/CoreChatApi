@@ -80,11 +80,12 @@ namespace CoreChatApi.Controllers
                             [datetime]
                             )
                         VALUES(
-                            '{chat.Name}',
-                            '{chat.Message}',
+                            '@name',
+                            '@message',
                             GETDATE()
                             )";
-            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(chatSql);
+            var parameters = new DynamicParameters(new { name = chat.Name, message = chat.Message});
+            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(chatSql, parameters);
             if (isSqlInvalid)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
