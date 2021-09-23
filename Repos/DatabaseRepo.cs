@@ -30,7 +30,7 @@ namespace CoreChatApi.Repos
         //     System.Reflection.FieldAttributes
         // }
 
-        public async Task<IEnumerable<T>> QuerySQL<T>(string sql)
+        public async Task<IEnumerable<T>> QuerySQL<T>(string sql, DynamicParameters parameters = null)
         {
             var isConnectionInvalid = !await TestConnection(_dbConnectionString);
             if (isConnectionInvalid) return new List<T>();
@@ -39,14 +39,16 @@ namespace CoreChatApi.Repos
             {
                 using (var con = new SqlConnection(_dbConnectionString))
                 {
-                    return await con.QueryAsync<T>(sql);
+                    if (parameters is null)
+                        return await con.QueryAsync<T>(sql);
+                    else
+                        return await con.QueryAsync<T>(sql, parameters);
                 }
             }
             catch (Exception exception)
             {
                 if (_logger != null)
                     await _logger.LogMessage($"{exception.Message}.\n{Globals.FAILED_TO_RUN_SQL_QUERY}. Sql query: {sql}", "error");
-
                 return null;
             }
         }
@@ -61,13 +63,9 @@ namespace CoreChatApi.Repos
                 using (var con = new SqlConnection(_dbConnectionString))
                 {
                     if (values is null)
-                    {
-                        var result = await con.ExecuteAsync(sql);
-                    }
+                        await con.ExecuteAsync(sql);
                     else
-                    {
-                        var result = await con.ExecuteAsync(sql, values);
-                    }
+                        await con.ExecuteAsync(sql, values);
                 }
                 return true;
             }

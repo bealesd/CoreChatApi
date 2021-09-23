@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Dapper;
 using CoreChatApi.Dtos;
 using CoreChatApi.Repos;
 using CoreChatApi.Logger;
@@ -60,9 +59,10 @@ namespace CoreChatApi.Controllers
             var getChatsAfterIdSql = @$"
                     SELECT *   
                     FROM [dbo].[{table}]   
-                    WHERE id > {id}";
+                    WHERE id > @id";
 
-            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getChatsAfterIdSql);
+            var parameters = new DynamicParameters(new { id = id});
+            var chats = await _databaseRepo.QuerySQL<ChatDTO>(getChatsAfterIdSql, parameters);
             if (chats == null)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
