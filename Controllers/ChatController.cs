@@ -80,8 +80,8 @@ namespace CoreChatApi.Controllers
                             [datetime]
                             )
                         VALUES(
-                            '@name',
-                            '@message',
+                            @name,
+                            @message,
                             GETDATE()
                             )";
             var parameters = new DynamicParameters(new { name = chat.Name, message = chat.Message});
