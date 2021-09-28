@@ -53,6 +53,20 @@ namespace CoreChatApi.Controllers
             return Ok(records);
         }
 
+                [HttpGet]
+        [ActionName("GetAllRecords")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetAllRecords()
+        {
+            var getRecorsdsSql = @$"SELECT * FROM [dbo].[{table}]";
+
+            var records = await _databaseRepo.QuerySQL<CalendarDTO>(getRecorsdsSql);
+            if (records == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(records);
+        }
+
         [HttpPost]
         [ActionName("AddRecord")]
         public async Task<IActionResult> AddRecord(CalendarDTO calendar)
