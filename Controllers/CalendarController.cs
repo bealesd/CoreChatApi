@@ -104,6 +104,23 @@ namespace CoreChatApi.Controllers
             return records.FirstOrDefault();
         }
 
+        [HttpPost]
+        [ActionName("DeleteRecord")]
+        public async Task<IActionResult> DeleteRecord(int id)
+        {
+            var deleteRecordSql = @$"
+                    DELETE *   
+                    FROM [dbo].[{table}]   
+                    WHERE id = @id";
+
+            var parameters = new DynamicParameters(new { id = id });
+            var result = await _databaseRepo.ExecuteSQL(deleteRecordSql, parameters);
+            if (!result)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok();
+        }
+
         private async void CreateCalendarTable()
         {
             var createCalendarTableSql = @$"
