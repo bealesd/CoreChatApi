@@ -115,11 +115,11 @@ namespace CoreChatApi.Controllers
             var calendarSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
                 SET what = @what,
-                SET year = @year,
-                SET month = @month,
-                SET day = @day,
-                SET hour = @hour,
-                SET minute = @minute
+                    year = @year,
+                    month = @month,
+                    day = @day,
+                    hour = @hour,
+                    minute = @minute
                 WHERE id = @id";
             var parameters = new DynamicParameters(new
             {
