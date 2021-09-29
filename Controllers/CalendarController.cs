@@ -148,7 +148,7 @@ namespace CoreChatApi.Controllers
             return records.FirstOrDefault();
         }
 
-        [HttpPost]
+        [HttpDelete]
         [ActionName("DeleteRecord")]
         public async Task<IActionResult> DeleteRecord(int id)
         {
