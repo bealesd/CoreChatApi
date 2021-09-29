@@ -53,7 +53,7 @@ namespace CoreChatApi.Controllers
             return Ok(records);
         }
 
-                [HttpGet]
+        [HttpGet]
         [ActionName("GetAllRecords")]
         [Produces("application/json")]
         public async Task<IActionResult> GetAllRecords()
@@ -106,6 +106,36 @@ namespace CoreChatApi.Controllers
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
 
             return Ok(lastRecord);
+        }
+
+        [HttpPut]
+        [ActionName("UpdateRecord")]
+        public async Task<IActionResult> UpdateRecord(CalendarDTO calendar)
+        {
+            var calendarSql = @$"USE [CoreChat]
+                UPDATE [dbo].[{table}]
+                SET what = @what,
+                SET year = @year,
+                SET month = @month,
+                SET day = @day,
+                SET hour = @hour,
+                SET minute = @minute
+                WHERE id = @id";
+            var parameters = new DynamicParameters(new
+            {
+                id = calendar.Id,
+                what = calendar.What,
+                year = calendar.Year,
+                month = calendar.Month,
+                day = calendar.Day,
+                hour = calendar.Hour,
+                minute = calendar.Minute
+            });
+            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(calendarSql, parameters);
+            if (isSqlInvalid)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok();
         }
 
         private async Task<CalendarDTO> GetLastRecord()
