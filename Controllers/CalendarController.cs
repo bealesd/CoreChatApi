@@ -153,7 +153,7 @@ namespace CoreChatApi.Controllers
         public async Task<IActionResult> DeleteRecord(int id)
         {
             var deleteRecordSql = @$"
-                    DELETE *   
+                    DELETE
                     FROM [dbo].[{table}]   
                     WHERE id = @id";
 
