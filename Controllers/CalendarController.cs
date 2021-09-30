@@ -118,7 +118,7 @@ namespace CoreChatApi.Controllers
             var calendarSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
                 SET what = @what,
-                    description = @description 
+                    description = @description, 
                     year = @year,
                     month = @month,
                     day = @day,
