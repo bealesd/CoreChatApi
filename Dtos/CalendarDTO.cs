@@ -6,6 +6,7 @@ namespace CoreChatApi.Dtos
     {
         public int? Id { get; set; }
         public string What { get; set; }
+        public string Description { get; set; }  
         public int Year { get; set; }
         public int Month { get; set; }
         public int Day { get; set; }

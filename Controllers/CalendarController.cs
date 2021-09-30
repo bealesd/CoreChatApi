@@ -74,6 +74,7 @@ namespace CoreChatApi.Controllers
             var calendarSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[{table}](
                             [what],
+                            [description],
                             [year],
                             [month],
                             [day],
@@ -82,6 +83,7 @@ namespace CoreChatApi.Controllers
                             )
                         VALUES(
                             @what,
+                            @description,
                             @year,
                             @month,
                             @day,
@@ -91,6 +93,7 @@ namespace CoreChatApi.Controllers
             var parameters = new DynamicParameters(new
             {
                 what = calendar.What,
+                description = calendar.Description,
                 year = calendar.Year,
                 month = calendar.Month,
                 day = calendar.Day,
@@ -115,6 +118,7 @@ namespace CoreChatApi.Controllers
             var calendarSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
                 SET what = @what,
+                    description = @description 
                     year = @year,
                     month = @month,
                     day = @day,
@@ -125,6 +129,7 @@ namespace CoreChatApi.Controllers
             {
                 id = calendar.Id,
                 what = calendar.What,
+                description = calendar.Description,
                 year = calendar.Year,
                 month = calendar.Month,
                 day = calendar.Day,
@@ -172,6 +177,7 @@ namespace CoreChatApi.Controllers
                 CREATE TABLE {table} (
 					id INT NOT NULL IDENTITY,
                     what TEXT NOT NULL,
+                    description TEXT NOT NULL,
                     year INT NOT NULL,
                     month INT NOT NULL,
                     day INT NOT NULL,
