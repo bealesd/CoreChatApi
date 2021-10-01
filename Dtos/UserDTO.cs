@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace CoreChatApi.Dtos
 {
-    public class UserDTO
+    public class UserLoginDTO
     {
         public int? Id { get; set; }
         public string Username { get; set; }
@@ -12,5 +14,6 @@ namespace CoreChatApi.Dtos
         public int? Id { get; set; }
         public string Username { get; set; }
         public string Hash { get; set; }
+
     }
 }
