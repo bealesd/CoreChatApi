@@ -112,8 +112,8 @@ namespace CoreChatApi.Controllers
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
                 CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,
-                    name TEXT NOT NULL,
-                    message TEXT NOT NULL,
+                    name VARCHAR(MAX) NOT NULL,
+                    message VARCHAR(MAX) NOT NULL,
                     datetime DATETIME NOT NULL
                 )";
             await _databaseRepo.ExecuteSQL(createChatTableSql);

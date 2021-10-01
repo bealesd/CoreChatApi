@@ -176,13 +176,13 @@ namespace CoreChatApi.Controllers
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
                 CREATE TABLE {table} (
 					id INT NOT NULL IDENTITY,
-                    what TEXT NOT NULL,
-                    description TEXT NOT NULL,
+                    what VARCHAR(MAX) NOT NULL,
+                    description VARCHAR(MAX) NOT NULL,
                     year INT NOT NULL,
                     month INT NOT NULL,
                     day INT NOT NULL,
                     hour INT NOT NULL,
-                    minute INT NOT NULL,
+                    minute INT NOT NULL
                 )";
             await _databaseRepo.ExecuteSQL(createCalendarTableSql);
         }

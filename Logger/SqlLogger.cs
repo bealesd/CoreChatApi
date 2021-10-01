@@ -58,8 +58,8 @@ namespace CoreChatApi.Logger
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='{table}' AND xtype='U')
                 CREATE TABLE {table} (
 					id int NOT NULL IDENTITY,
-                    level TEXT NOT NULL,
-                    message TEXT NOT NULL,
+                    level VARCHAR(MAX) NOT NULL,
+                    message VARCHAR(MAX) NOT NULL,
                     datetime DATETIME NOT NULL
                 )";
 
