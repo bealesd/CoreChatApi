@@ -35,11 +35,11 @@ namespace CoreChatApi.Controllers
         }
 
         [HttpGet]
-        [ActionName("GetNotepads")]
+        [ActionName("GetAllNotepads")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetNotepads()
+        public async Task<IActionResult> GetAllNotepads()
         {
-            var getTodosSql = @$"SELECT * FROM [dbo].[{table}]";
+            var getTodosSql = @$"SELECT [Name], [Type], [Path], [Created], [Id] FROM [dbo].[{table}]";
 
             var notepads = await _databaseRepo.QuerySQL<NotepadDTO>(getTodosSql);
             if (notepads == null)
@@ -48,6 +48,77 @@ namespace CoreChatApi.Controllers
             return Ok(notepads);
         }
 
+        [HttpGet]
+        [ActionName("GetNotepadDirectChildren")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetNotepadDirectChildren(string path)
+        {
+            // materialized path solution - http://www.dbazine.com/oracle/or-articles/tropashko4/
+
+            var getNotepadsSql = @$"
+                SELECT notepad1.Path, notepad1.Name, notepad1.Type, notepad1.Id, notepad1.Created
+                FROM [dbo].[{table}] notepad1, [dbo].[{table}] notepad2
+                WHERE notepad1.Path LIKE notepad2.Path + '%' 
+                AND notepad1.Path NOT LIKE notepad2.Path + '%/%/%'
+                AND notepad2.Path LIKE @Path";
+
+            var parameters = new DynamicParameters(new
+            {
+                Path = path
+            });
+
+            var notepads = await _databaseRepo.QuerySQL<NotepadDTO>(getNotepadsSql, parameters);
+            if (notepads == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(notepads);
+        }
+
+        [HttpGet]
+        [ActionName("GetNotepadChildren")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetNotepadChildren(string path)
+        {
+            var getNotepadsSql = @$"
+                SELECT notepad1.Path, notepad1.Name, notepad1.Type, notepad1.Id, notepad1.Created
+                FROM [dbo].[{table}] notepad1, [dbo].[{table}] notepad2
+                WHERE notepad1.Path LIKE notepad2.Path + '%' 
+                AND notepad2.Path = @Path";
+
+            var parameters = new DynamicParameters(new
+            {
+                Path = path
+            });
+
+            var notepads = await _databaseRepo.QuerySQL<NotepadDTO>(getNotepadsSql, parameters);
+            if (notepads == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(notepads);
+        }
+
+        [HttpGet]
+        [ActionName("GetNotepadParents")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetNotepadParents(string path)
+        {
+            var getNotepadsSql = @$"
+                SELECT notepad1.Path, notepad1.Name, notepad1.Type, notepad1.Id, notepad1.Created
+                FROM [dbo].[{table}] notepad1, [dbo].[{table}] notepad2
+                WHERE notepad2.Path LIKE notepad1.Path + '%' 
+                AND notepad2.Path = @Path";
+
+            var parameters = new DynamicParameters(new
+            {
+                Path = path
+            });
+
+            var notepads = await _databaseRepo.QuerySQL<NotepadDTO>(getNotepadsSql, parameters);
+            if (notepads == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(notepads);
+        }
         [HttpPost]
         [ActionName("AddNotepad")]
         public async Task<IActionResult> AddNotepad(NotepadDTO notepad)
@@ -64,7 +135,7 @@ namespace CoreChatApi.Controllers
                             @Text,
                             @Name,
                             @Type,
-                            @Path
+                            @Path,
                             GETDATE()
                             )";
             var parameters = new DynamicParameters(new
@@ -145,7 +216,7 @@ namespace CoreChatApi.Controllers
                     Text VARCHAR(MAX) NOT NULL,
                     Name VARCHAR(MAX) NOT NULL,
                     Type VARCHAR(MAX) NOT NULL,
-                    Path VARCHAR(MAX) NOT NULL
+                    Path VARCHAR(MAX) NOT NULL,
                     Created DATETIME NOT NULL
                 )";
             await _databaseRepo.ExecuteSQL(creatNotepadTableSql);
