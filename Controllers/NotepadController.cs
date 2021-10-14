@@ -35,6 +35,28 @@ namespace CoreChatApi.Controllers
         }
 
         [HttpGet]
+        [ActionName("GetNotepad")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetNotepad(int id)
+        {
+            var getNotepadsSql = @$"
+                SELECT * FROM [dbo].[{table}]
+                WHERE Id = @Id";
+
+            var parameters = new DynamicParameters(new
+            {
+                Id = id
+            });
+
+            var notepad = (await _databaseRepo.QuerySQL<NotepadDTO>(getNotepadsSql, parameters)).FirstOrDefault();
+            if (notepad == null)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok(notepad);
+        }
+
+
+        [HttpGet]
         [ActionName("GetAllNotepads")]
         [Produces("application/json")]
         public async Task<IActionResult> GetAllNotepads()
