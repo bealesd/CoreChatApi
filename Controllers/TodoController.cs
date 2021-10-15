@@ -86,7 +86,7 @@ namespace CoreChatApi.Controllers
         {
             var todoSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
-                SET complete = @complete, 
+                SET complete = @complete
                 WHERE id = @id";
             var parameters = new DynamicParameters(new
             {
