@@ -181,40 +181,31 @@ namespace CoreChatApi.Controllers
         [ActionName("UpdateNotepad")]
         public async Task<IActionResult> UpdateNotepad(NotepadDTO notepad)
         {
-            var notepadSql = @$"USE [CoreChat]
+            var notepadSql = "";
+            if (notepad.Text == null)
+            {
+                notepadSql = @$"USE [CoreChat]
+                UPDATE [dbo].[{table}]
+                SET Path = @Path,
+                Type = @Type
+                WHERE id = @id";
+            }
+            else
+            {
+                notepadSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
                 SET Text = @Text,
                 Path = @Path,
                 Type = @Type
                 WHERE id = @id";
+            }
+
             var parameters = new DynamicParameters(new
             {
                 Id = notepad.Id,
                 Text = notepad.Text,
                 Path = notepad.Path,
                 Type = notepad.Type
-            });
-            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(notepadSql, parameters);
-            if (isSqlInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
-
-            return Ok();
-        }
-
-        [HttpPut]
-        [ActionName("RenameOrMoveNotepad")]
-        public async Task<IActionResult> RenameOrMoveNotepad(NotepadDTO notepad)
-        {
-            var notepadSql = @$"USE [CoreChat]
-                UPDATE [dbo].[{table}]
-                SET Path = @Path,
-                Name = @Name
-                WHERE id = @id";
-            var parameters = new DynamicParameters(new
-            {
-                Id = notepad.Id,
-                Path = notepad.Path,
-                Name = notepad.Name
             });
             var isSqlInvalid = !await _databaseRepo.ExecuteSQL(notepadSql, parameters);
             if (isSqlInvalid)
