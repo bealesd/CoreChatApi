@@ -80,8 +80,7 @@ namespace CoreChatApi.Controllers
             var getNotepadsSql = @$"
                 SELECT DISTINCT notepad1.Path, notepad1.Name, notepad1.Type, notepad1.Id, notepad1.Created
                 FROM [dbo].[{table}] notepad1, [dbo].[{table}] notepad2
-                WHERE notepad1.Path LIKE notepad2.Path + '%' 
-                AND notepad1.Path NOT LIKE notepad2.Path + '%/%/%'
+                WHERE notepad1.Path LIKE notepad2.Path 
                 AND notepad2.Path LIKE @Path";
 
             var parameters = new DynamicParameters(new
