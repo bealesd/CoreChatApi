@@ -187,7 +187,7 @@ namespace CoreChatApi.Controllers
                 notepadSql = @$"USE [CoreChat]
                 UPDATE [dbo].[{table}]
                 SET Path = @Path,
-                Type = @Type
+                Name = @Name
                 WHERE id = @id";
             }
             else
@@ -196,7 +196,7 @@ namespace CoreChatApi.Controllers
                 UPDATE [dbo].[{table}]
                 SET Text = @Text,
                 Path = @Path,
-                Type = @Type
+                Name = @Name
                 WHERE id = @id";
             }
 
@@ -205,7 +205,8 @@ namespace CoreChatApi.Controllers
                 Id = notepad.Id,
                 Text = notepad.Text,
                 Path = notepad.Path,
-                Type = notepad.Type
+                Type = notepad.Type,
+                Name = notepad.Name
             });
             var isSqlInvalid = !await _databaseRepo.ExecuteSQL(notepadSql, parameters);
             if (isSqlInvalid)
