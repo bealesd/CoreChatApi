@@ -34,6 +34,7 @@ namespace CoreChatApi.Controllers
             CreateCalendarTable();
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetRecords")]
         [Produces("application/json")]
@@ -53,6 +54,7 @@ namespace CoreChatApi.Controllers
             return Ok(records);
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetAllRecords")]
         [Produces("application/json")]
@@ -67,6 +69,7 @@ namespace CoreChatApi.Controllers
             return Ok(records);
         }
 
+        [Authorize]
         [HttpPost]
         [ActionName("AddRecord")]
         public async Task<IActionResult> AddRecord(CalendarDTO calendar)
@@ -111,6 +114,7 @@ namespace CoreChatApi.Controllers
             return Ok(lastRecord);
         }
 
+        [Authorize]
         [HttpPut]
         [ActionName("UpdateRecord")]
         public async Task<IActionResult> UpdateRecord(CalendarDTO calendar)
@@ -153,6 +157,7 @@ namespace CoreChatApi.Controllers
             return records.FirstOrDefault();
         }
 
+        [Authorize]
         [HttpDelete]
         [ActionName("DeleteRecord")]
         public async Task<IActionResult> DeleteRecord(int id)

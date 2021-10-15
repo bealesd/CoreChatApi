@@ -34,6 +34,7 @@ namespace CoreChatApi.Controllers
             Task.Run(() => this.CreateNotepadTable()).Wait();
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetNotepad")]
         [Produces("application/json")]
@@ -55,7 +56,7 @@ namespace CoreChatApi.Controllers
             return Ok(notepad);
         }
 
-
+        [Authorize]
         [HttpGet]
         [ActionName("GetAllNotepads")]
         [Produces("application/json")]
@@ -70,6 +71,7 @@ namespace CoreChatApi.Controllers
             return Ok(notepads);
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetNotepadDirectChildren")]
         [Produces("application/json")]
@@ -95,6 +97,7 @@ namespace CoreChatApi.Controllers
             return Ok(notepads);
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetNotepadChildren")]
         [Produces("application/json")]
@@ -118,6 +121,7 @@ namespace CoreChatApi.Controllers
             return Ok(notepads);
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetNotepadParents")]
         [Produces("application/json")]
@@ -140,6 +144,8 @@ namespace CoreChatApi.Controllers
 
             return Ok(notepads);
         }
+
+        [Authorize]
         [HttpPost]
         [ActionName("AddNotepad")]
         public async Task<IActionResult> AddNotepad(NotepadDTO notepad)
@@ -177,6 +183,7 @@ namespace CoreChatApi.Controllers
             return Ok(lastNotepad);
         }
 
+        [Authorize]
         [HttpPut]
         [ActionName("UpdateNotepad")]
         public async Task<IActionResult> UpdateNotepad(NotepadDTO notepad)
@@ -225,6 +232,7 @@ namespace CoreChatApi.Controllers
             return records.FirstOrDefault();
         }
 
+        [Authorize]
         [HttpDelete]
         [ActionName("DeleteNotepad")]
         public async Task<IActionResult> DeleteNotepad(int id)

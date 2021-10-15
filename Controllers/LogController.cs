@@ -30,6 +30,7 @@ namespace CoreChatApi.Controllers
             _databaseRepo = new DatabaseRepo(_dbConnectionString, _myLogger);
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetLogs")]
         [Produces("application/json")]
@@ -42,6 +43,7 @@ namespace CoreChatApi.Controllers
             return Ok(logs);
         }
 
+        [Authorize]
         [HttpPost]
         [ActionName("AddLog")]
         public async Task<IActionResult> AddLog(LogDTO log)

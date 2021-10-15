@@ -34,6 +34,7 @@ namespace CoreChatApi.Controllers
             CreateChatTable();
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetChats")]
         [Produces("application/json")]
@@ -51,6 +52,7 @@ namespace CoreChatApi.Controllers
             return Ok(chats);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         [ActionName("GetChatsAfterId")]
         [Produces("application/json")]
@@ -69,6 +71,7 @@ namespace CoreChatApi.Controllers
             return Ok(chats);
         }
 
+        [Authorize]
         [HttpPost]
         [ActionName("AddChat")]
         public async Task<IActionResult> AddChat(ChatDTO chat)

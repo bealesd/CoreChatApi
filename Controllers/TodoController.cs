@@ -34,6 +34,7 @@ namespace CoreChatApi.Controllers
             Task.Run(() => this.CreateTodoTable()).Wait();
         }
 
+        [Authorize]
         [HttpGet]
         [ActionName("GetTodos")]
         [Produces("application/json")]
@@ -48,6 +49,7 @@ namespace CoreChatApi.Controllers
             return Ok(todos);
         }
 
+        [Authorize]
         [HttpPost]
         [ActionName("AddTodo")]
         public async Task<IActionResult> AddTodo(TodoDTO todo)
@@ -80,6 +82,7 @@ namespace CoreChatApi.Controllers
             return Ok(lastTodo);
         }
 
+        [Authorize]
         [HttpPut]
         [ActionName("UpdateTodo")]
         public async Task<IActionResult> UpdateTodo(TodoDTO todo)
@@ -110,6 +113,7 @@ namespace CoreChatApi.Controllers
             return records.FirstOrDefault();
         }
 
+        [Authorize]
         [HttpDelete]
         [ActionName("DeleteTodo")]
         public async Task<IActionResult> DeleteTodo(int id)
