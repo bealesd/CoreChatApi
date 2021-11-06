@@ -1,4 +1,4 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - CoreChatApi
+name: Build and Deploy core chat api
 
 on:
   push:
