@@ -39,7 +39,7 @@ namespace CoreChatApi.Controllers
             CreateProfileTable();
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpGet]
         [ActionName("GetProfile")]
         public async Task<IActionResult> GetProfile(string username)
