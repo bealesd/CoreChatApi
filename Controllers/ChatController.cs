@@ -38,11 +38,12 @@ namespace CoreChatApi.Controllers
         [HttpGet]
         [ActionName("GetChats")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetChats()
+        public async Task<IActionResult> GetChats(System.Guid guid)
         {
             var getLastTenRowSql = @$"
                     SELECT TOP(100) *   
                     FROM [dbo].[{table}]   
+                    WHERE guid LIKE '{guid}'
                     ORDER BY datetime DESC";
 
             var chats = (await _databaseRepo.QuerySQL<ChatDTO>(getLastTenRowSql)).ToList();
@@ -53,15 +54,15 @@ namespace CoreChatApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id}")]
+        [HttpGet()]
         [ActionName("GetChatsAfterId")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetChatsAfterId(int id)
+        public async Task<IActionResult> GetChatsAfterId(int id, System.Guid guid)
         {
             var getChatsAfterIdSql = @$"
                     SELECT *   
                     FROM [dbo].[{table}]   
-                    WHERE id > @id";
+                    WHERE id > @id AND guid LIKE '{guid}'";
 
             var parameters = new DynamicParameters(new { id = id});
             var chats = await _databaseRepo.QuerySQL<ChatDTO>(getChatsAfterIdSql, parameters);
@@ -80,14 +81,16 @@ namespace CoreChatApi.Controllers
                 INSERT INTO [dbo].[{table}](
                             [name],
                             [message],
-                            [datetime]
+                            [datetime],
+                            [guid]
                             )
                         VALUES(
                             @name,
                             @message,
-                            GETDATE()
+                            GETDATE(),
+                            @guid
                             )";
-            var parameters = new DynamicParameters(new { name = chat.Name, message = chat.Message});
+            var parameters = new DynamicParameters(new { name = chat.Name, message = chat.Message, guid = chat.Guid});
             var isSqlInvalid = !await _databaseRepo.ExecuteSQL(chatSql, parameters);
             if (isSqlInvalid)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
@@ -117,7 +120,8 @@ namespace CoreChatApi.Controllers
 					id int NOT NULL IDENTITY,
                     name VARCHAR(MAX) NOT NULL,
                     message VARCHAR(MAX) NOT NULL,
-                    datetime DATETIME NOT NULL
+                    datetime DATETIME NOT NULL,
+                    guid UNIQUEIDENTIFIER NOT NULL
                 )";
             await _databaseRepo.ExecuteSQL(createChatTableSql);
         }

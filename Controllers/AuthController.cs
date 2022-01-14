@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -54,7 +55,24 @@ namespace CoreChatApi.Controllers
             return Ok(token);
         }
 
-        [Authorize]
+        [HttpGet]
+        [ActionName("GetUsernameId")]
+        public async Task<IActionResult> GetUsernameId(string username)
+        {
+            var getRecorsdSql = @$"
+                SELECT *   
+                FROM [dbo].[{table}]
+                WHERE username LIKE @username";
+
+            var parameters = new DynamicParameters(new { username = username });
+            var records = await _databaseRepo.QuerySQL<UserLoginDTO>(getRecorsdSql, parameters);
+
+            var usernameId = records.Select(profile => profile.Id).First();
+
+            return Ok(usernameId);
+        }
+
+        // [Authorize]
         [HttpPost]
         [ActionName("AddUser")]
         public async Task<IActionResult> AddUser(UserLoginDTO user)
