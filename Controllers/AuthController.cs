@@ -72,6 +72,19 @@ namespace CoreChatApi.Controllers
             return Ok(usernameId);
         }
 
+        [Authorize]
+        [HttpGet]
+        [ActionName("GetUsers")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var getRecorsdSql = @$"
+                SELECT *   
+                FROM [dbo].[{table}]";
+
+            var records = await _databaseRepo.QuerySQL<UserSqlDTO>(getRecorsdSql);
+            return Ok(records);
+        }
+
         // [Authorize]
         [HttpPost]
         [ActionName("AddUser")]
