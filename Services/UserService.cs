@@ -56,17 +56,19 @@ namespace CoreChatApi.Services
         public async Task<string> Authenticate(UserLoginDTO model)
         {
             var sqlUser = await GetUser(model.Username);
-            if (sqlUser == null){
+            if (sqlUser == null)
+            {
                 await _myLogger.LogMessage(Globals.FAILED_TO_GET_USER, "error");
                 return null;
             }
-                
-            if (!ValidateUser(sqlUser.Hash, model.Password)){
+
+            if (!ValidateUser(sqlUser.Hash, model.Password))
+            {
                 await _myLogger.LogMessage(Globals.FAILED_TO_LOGIN, "error");
                 return null;
             }
 
-            var user = new UserLoginDTO(){Username = sqlUser.Username, Id = sqlUser.Id};
+            var user = new UserLoginDTO() { Username = sqlUser.Username, Id = sqlUser.Id, Role = sqlUser.Role };
             var token = generateJwtToken(user);
 
             return token;
@@ -74,16 +76,27 @@ namespace CoreChatApi.Services
 
         private string generateJwtToken(UserLoginDTO user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            try
             {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[] {
+                     new Claim("id", user.Id.ToString()),
+                     new Claim("role", user.Role)
+                     }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return tokenHandler.WriteToken(token);
+            }
+            catch (System.Exception ex)
+            {
+                return "";
+            }
+
         }
 
         public string CreateHashAndSalt(string password)

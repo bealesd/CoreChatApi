@@ -85,7 +85,7 @@ namespace CoreChatApi.Controllers
             return Ok(records);
         }
 
-        // [Authorize]
+        [Authorize(Role = "admin")]
         [HttpPost]
         [ActionName("AddUser")]
         public async Task<IActionResult> AddUser(UserLoginDTO user)
@@ -93,18 +93,21 @@ namespace CoreChatApi.Controllers
             var userSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[{table}](
                             [username],
-                            [hash]
+                            [hash],
+                            [role]
                             )
                         VALUES(
                             @username,
-                            @hashAndSalt
+                            @hashAndSalt,
+                            @role
                             )";
 
 
             var parameters = new DynamicParameters(new
             {
                 username = user.Username,
-                hashAndSalt = _userService.CreateHashAndSalt(user.Password)
+                hashAndSalt = _userService.CreateHashAndSalt(user.Password),
+                role = user.Role
             });
 
             var isSqlInvalid = !await _databaseRepo.ExecuteSQL(userSql, parameters);
@@ -122,6 +125,7 @@ namespace CoreChatApi.Controllers
                     id INT NOT NULL IDENTITY,
                     username VARCHAR(MAX) NOT NULL,
                     hash VARCHAR(MAX) NOT NULL,
+                    role VARCHAR(MAX) NOT NULL
                 )";
             await _databaseRepo.ExecuteSQL(createCalendarTableSql);
         }

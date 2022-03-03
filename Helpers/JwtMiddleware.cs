@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CoreChatApi.Services;
+using System.Security.Claims;
 
 namespace CoreChatApi.Helpers
 {
@@ -48,10 +49,16 @@ namespace CoreChatApi.Helpers
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+                var role = jwtToken.Claims.First(x => x.Type == "role").Value;
 
                 context.Items["User"] = userId;
+                context.Items["Role"] = role;
             }
-            catch { }
+            catch (System.Exception ex)
+            {
+                // TODO
+            }
+
         }
     }
 }
