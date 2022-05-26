@@ -7,6 +7,7 @@ using Dapper;
 using CoreChatApi.Dtos;
 using CoreChatApi.Repos;
 using CoreChatApi.Logger;
+using System.Collections.Generic;
 
 namespace CoreChatApi.Controllers
 {
@@ -38,26 +39,41 @@ namespace CoreChatApi.Controllers
         [HttpGet]
         [ActionName("GetChatsThatAreRead")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetChatsThatAreRead(int usernameId, string chatIds)
+        public async Task<IActionResult> GetChatsThatAreRead(int usernameId, [FromQuery] int[] chatIds)
         {
             var getChatReadSql = @$"
                     SELECT *   
                     FROM [dbo].[{table}]   
-                    WHERE usernameId = {usernameId}
-                    AND chatId in ({chatIds})
+                    WHERE usernameId = @usernameId
+                    AND chatId in @chatIds
                     ORDER BY datetime DESC";
 
-            var getChatRead = (await _databaseRepo.QuerySQL<ChatReadDTO>(getChatReadSql)).ToList();
+            var parameters = new DynamicParameters(new
+            {
+                usernameId = usernameId,
+                chatIds = chatIds
+            });
+
+            var getChatRead = (await _databaseRepo.QuerySQL<ChatReadDTO>(getChatReadSql, parameters)).ToList();
             if (getChatRead == null)
                 return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
-
+                      
             return Ok(getChatRead);
         }
 
         // [Authorize]
         [HttpPost]
         [ActionName("AddChatRead")]
-        public async Task<IActionResult> AddChatRead(ChatReadDTO chatRead)
+        public async Task<IActionResult> AddChatRead(int usernameId, int chatId)
+        {
+            var isSqlInvalid = !(await AddChatReadToTable(usernameId, chatId));
+            if (isSqlInvalid)
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
+
+            return Ok();
+        }
+
+        private async Task<bool> AddChatReadToTable(int usernameId, int chatId)
         {
             var insertChatReadSql = @$"USE [CoreChat]
                 INSERT INTO [dbo].[{table}](
@@ -70,12 +86,8 @@ namespace CoreChatApi.Controllers
                             @chatId,
                             GETDATE()
                             )";
-            var parameters = new DynamicParameters(new { usernameId = chatRead.UsernameId, chatId = chatRead.ChatId });
-            var isSqlInvalid = !await _databaseRepo.ExecuteSQL(insertChatReadSql, parameters);
-            if (isSqlInvalid)
-                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest, Globals.FAILED_TO_EXECUTE_SQL);
-
-            return Ok();
+            var parameters = new DynamicParameters(new { usernameId = usernameId, chatId = chatId });
+            return await _databaseRepo.ExecuteSQL(insertChatReadSql, parameters);
         }
 
         private async void CreateChatsReadTable()
