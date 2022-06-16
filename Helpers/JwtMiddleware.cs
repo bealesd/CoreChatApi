@@ -6,8 +6,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CoreChatApi.Services;
-using System.Security.Claims;
 
 namespace CoreChatApi.Helpers
 {
@@ -22,17 +20,17 @@ namespace CoreChatApi.Helpers
             _appSettings = appSettings.Value;
         }
 
-        public async Task Invoke(HttpContext context, IUserService userService)
+        public async Task Invoke(HttpContext context)
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
-                attachUserToContext(context, userService, token);
+                attachUserToContext(context, token);
 
             await _next(context);
         }
 
-        private void attachUserToContext(HttpContext context, IUserService userService, string token)
+        private void attachUserToContext(HttpContext context, string token)
         {
             try
             {
@@ -53,6 +51,10 @@ namespace CoreChatApi.Helpers
 
                 context.Items["User"] = userId;
                 context.Items["Role"] = role;
+            }
+            catch (Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException ex)
+            {
+                System.Console.WriteLine("Invalid token.");
             }
             catch (System.Exception ex)
             {

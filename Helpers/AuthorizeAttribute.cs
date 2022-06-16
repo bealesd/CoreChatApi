@@ -13,11 +13,26 @@ public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         var isUserLoggedIn = context.HttpContext.Items.ContainsKey("User");
         if (!isUserLoggedIn)
+        {
             context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
-        
+            return;
+        }
+
+        var isUserRole = context.HttpContext.Items.ContainsKey("Role");
+        if (!isUserRole)
+        {
+            context.Result = new ContentResult()
+            {
+                Content = "You are unauthorized!!",
+                StatusCode = 401
+            };
+            return;
+        }
+
         var userRole = context.HttpContext.Items["Role"].ToString();
         var isUserAdminOrRole = userRole == Role || userRole == ADMIN;
-        if (Role != null && !isUserAdminOrRole){
+        if (Role != null && !isUserAdminOrRole)
+        {
             context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
         }
     }
